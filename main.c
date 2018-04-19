@@ -1209,6 +1209,71 @@ void draw_background() {
 	BSP_LCD_FillPolygon(Points, 4);
 }
 
+int KEYBOARD_X = 10;
+int KEYBOARD_Y = 20;
+int KEYBOARD_KEY_WIDTH = 20;
+int KEYBOARD_KEY_HEIGHT = 20;
+
+int WRITTEN_X = 3;
+int WRITTEN_Y = 3;
+
+// text buffer
+char written[1024] = {0};
+int cursor = 0;
+
+char keys[2][11] = {
+  {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'},
+  {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'},
+  {'z', 'x', 'c', 'v', 'b', 'n', 'm'}
+};
+
+int row_size(int row) {
+  switch(row) {
+    case 0:
+      return 10;
+    case 1:
+      return 9;
+    case 2:
+      return 7;
+    default:
+      return 0;
+  }
+}
+
+void draw_keyboard(void) {
+  // TODO: align center
+
+  int x = KEYBOARD_X;
+  int y = KEYBOARD_Y;
+  for(int row = 0; row < 3; ++row){
+    for(int col = 0; col < row_size(row); ++col) {
+      // draw key
+      BSP_LCD_DisplayChar(x, y, keys[row][col]);
+
+    }
+    y += KEYBOARD_KEY_HEIGHT;
+  }
+}
+
+char pos_to_key(int x, int y) {
+  int row = (y - KEYBOARD_Y) / KEYBOARD_KEY_HEIGHT;
+  int col = (x - KEYBOARD_X) / KEYBOARD_KEY_WIDTH;
+
+  // TODO handle outside of keyboard
+
+  return keys[row][col];
+}
+
+void write_char(char c){
+  written[cursor] = c;
+  ++cursor;
+
+  // rewrite all?
+
+  // TODO linebreaking
+  BSP_LCD_DisplayStringAt(WRITTEN_X, WRITTEN_Y, written, LEFT_MODE);
+}
+
 void mainTask(void* p)
 {
 	lcd_start();
@@ -1233,6 +1298,11 @@ void mainTask(void* p)
 
 		BSP_TS_GetState(&TS_State);
 		if(TS_State.touchDetected){
+      int x, y;
+      char letter = pos_to_key(x, y);
+      write_char(letter);
+
+
 			BSP_LCD_SelectLayer(0);
 			BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
 			BSP_LCD_FillEllipse(10, 10, 30, 30);
