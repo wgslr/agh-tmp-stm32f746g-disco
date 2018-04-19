@@ -110,6 +110,8 @@ static void MX_USART1_UART_Init(void);
 static void MX_USART6_UART_Init(void);
 void StartDefaultTask(void const * argument);
 
+static TS_StateTypeDef  TS_State;
+
 void mainTask(void* p);
 
 #define LCD_X_SIZE			RK043FN48H_WIDTH
@@ -1174,6 +1176,19 @@ int draw_rectangle(int x, int y, int width, int height, uint32_t color){
 	return 0;
 }
 
+void initialize_touchscreen(){
+	uint8_t  status = 0;
+	status = BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+	if (status != TS_OK)
+	{
+		BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
+		BSP_LCD_SetTextColor(LCD_COLOR_RED);
+		BSP_LCD_DisplayStringAt(0, BSP_LCD_GetYSize() - 95, (uint8_t *)"ERROR", CENTER_MODE);
+		BSP_LCD_DisplayStringAt(0, BSP_LCD_GetYSize() - 80, (uint8_t *)"Touchscreen cannot be initialized", CENTER_MODE);
+		return;
+	}
+}
+
 void draw_background() {
 //BSP_LCD_SetTextColor()
 	//draw_rectangle(3, 5, 100, 200, LCD_COLOR_DARKYELLOW);
@@ -1214,6 +1229,21 @@ void mainTask(void* p)
 	/* Infinite loop */
 	while(1)
 	{
+		// vTaskDelay(500);
+
+		BSP_TS_GetState(&TS_State);
+		if(TS_State.touchDetected){
+			BSP_LCD_SelectLayer(0);
+			BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
+			BSP_LCD_FillEllipse(10, 10, 30, 30);
+		}
+		else{
+			BSP_LCD_SelectLayer(0);     //Czyszczenie tla i ustawianie koloru
+			BSP_LCD_Clear(LCD_COLOR_WHITE);
+			BSP_LCD_SelectLayer(1);
+			BSP_LCD_Clear(LCD_COLOR_WHITE);
+		}
+		
 		vTaskDelay(500);
 	}
 }
