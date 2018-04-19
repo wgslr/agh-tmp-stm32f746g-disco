@@ -159,6 +159,7 @@ char inkey(void)
 }
 
 
+
 /**
   * @brief  The application entry point.
   *
@@ -1102,15 +1103,111 @@ static void MX_GPIO_Init(void)
 }
 
 
+void lcd_start(){
+ /* LCD Initialization */ 
+  BSP_LCD_Init();
+
+  /* LCD Initialization */ 
+  /*BSP_LCD_LayerDefaultInit(0, LCD_FB_START_ADDRESS);
+  BSP_LCD_LayerDefaultInit(1, LCD_FB_START_ADDRESS+(BSP_LCD_GetXSize()*BSP_LCD_GetYSize()*4));*/
+  
+  BSP_LCD_LayerRgb565Init(0, (uint32_t) &lcd_image_bg);
+  BSP_LCD_LayerRgb565Init(1, (uint32_t) &lcd_image_fg);
+  //BSP_LCD_LayerDefaultInit(0, lcd_image_bg);a
+  //BSP_LCD_LayerDefaultInit(1, lcd_image_fg);
+  /*
+  BSP_LCD_SetLayerAddress(0, &lcd_image_bg[0][0]);
+  BSP_LCD_SetLayerAddress(1, &lcd_image_fg[0][0]);
+*/
+  /* Enable the LCD */ 
+  BSP_LCD_DisplayOn(); 
+  
+    
+  /* Select the LCD Background Layer  */
+  BSP_LCD_SelectLayer(0);
+
+  /* Clear the Background Layer */ 
+  BSP_LCD_Clear(LCD_COLOR_WHITE);  
+  
+  /* Select the LCD Foreground Layer  */
+  BSP_LCD_SelectLayer(1);
+
+  /* Clear the Foreground Layer */ 
+  BSP_LCD_Clear(LCD_COLOR_WHITE);
+  
+  /* Configure the transparency for foreground and background :
+     Increase the transparency */
+  BSP_LCD_SetTransparency(0, 255);
+  BSP_LCD_SetTransparency(1, 255);
+  
+  /*
+  for(int i= 0; i < LCD_Y_SIZE; ++i){
+   for(int j = 0; j < LCD_X_SIZE; ++j){
+	    lcd_image_bg[i][j] = 0;
+		lcd_image_fg[i][j] = 0;
+   }
+  }*/
+  /*
+  for(int i= 10; i < 100; ++i){
+   for(int j = 10; j < 100; ++j){
+    lcd_image_bg[i][j] = 200;
+	lcd_image_fg[i][j] = 255;
+	}}
+	*/
+  
+  
+}
+
+int draw_rectangle(int x, int y, int width, int height, uint32_t color){
+	if(x + width >= LCD_X_SIZE  || y + height >= LCD_Y_SIZE){
+		return 1;
+	}
+	
+	BSP_LCD_SetTextColor(color);
+	
+	for(int i = 0; i < width; ++i){
+		for(int j  = 0; j < height; ++j){
+			lcd_image_fg[y + j][x + i] = 0;
+		}
+	}
+	
+	return 0;
+}
+
+void draw_background() {
+//BSP_LCD_SetTextColor()
+	//draw_rectangle(3, 5, 100, 200, LCD_COLOR_DARKYELLOW);
+	//draw_rectangle(30, 5, 100, 200, LCD_COLOR_RED);
+	BSP_LCD_SetTextColor(LCD_COLOR_RED);
+
+	BSP_LCD_FillRect(150, 100, 100, 50);
+	
+	pPoint Points = calloc(4, sizeof(Point));
+	Points[0].X = 10;
+	Points[0].Y = 10;
+	Points[1].X = 10;
+	Points[1].Y = 50;
+	Points[2].X = 120;
+	Points[2].Y = 50;
+	Points[3].X = 100;
+	Points[3].Y = 10;
+	BSP_LCD_FillPolygon(Points, 4);
+}
+
 void mainTask(void* p)
 {
+	lcd_start();
+	
 	/* init code for FATFS */
 	MX_FATFS_Init();
 
 	/* init code for USB_HOST */
 	MX_USB_HOST_Init();
+	
 
-	xprintf("LCD resolution X: %d, Y: %d\n",(int)LCD_X_SIZE,(int)LCD_Y_SIZE);
+	xprintf("LCD resolution X: %d, Y: %d\n",(int)LCD_X_SIZE,(int)LCD_Y_SIZE);\
+	
+	draw_background();
 	
 	xprintf("entering mainTask loop...\n");
 	
