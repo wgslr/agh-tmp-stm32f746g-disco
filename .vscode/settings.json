@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "errno.h": "c",
+        "unistd.h": "c",
+        "stm32746g_discovery_lcd.h": "c",
+        "fatfs.h": "c"
+    },
+    "C_Cpp.intelliSenseEngineFallback": "Enabled"
+}

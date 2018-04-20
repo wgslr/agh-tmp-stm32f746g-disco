@@ -67,6 +67,12 @@
 #include "task.h"
 #include "queue.h"
 
+#define  CIRCLE_RADIUS        30
+/* Private macro -------------------------------------------------------------*/
+#define  CIRCLE_XPOS(i)       ((i * BSP_LCD_GetXSize()) / 5)
+#define  CIRCLE_YPOS(i)       (BSP_LCD_GetYSize() - CIRCLE_RADIUS - 60)
+/* Private variables ---------------------------------------------------------*/
+
 
 /* USER CODE END Includes */
 
@@ -111,6 +117,10 @@ static void MX_USART6_UART_Init(void);
 void StartDefaultTask(void const * argument);
 
 static TS_StateTypeDef  TS_State;
+/* Private function prototypes -----------------------------------------------*/
+static void Touchscreen_SetHint(void);
+static void Touchscreen_DrawBackground (uint8_t state);
+/* Private functions ---------------------------------------------------------*/
 
 void mainTask(void* p);
 
@@ -160,8 +170,44 @@ char inkey(void)
 		return 0;
 }
 
+void initialize_touchscreen(){
+	uint8_t  status = 0;
+	status = BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+	if (status != TS_OK)
+	{
+		BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
+		BSP_LCD_SetTextColor(LCD_COLOR_RED);
+		BSP_LCD_DisplayStringAt(0, BSP_LCD_GetYSize() - 95, (uint8_t *)"ERROR", CENTER_MODE);
+		BSP_LCD_DisplayStringAt(0, BSP_LCD_GetYSize() - 80, (uint8_t *)"Touchscreen cannot be initialized", CENTER_MODE);
+		return;
+	}
+}
 
+void lcd_start() {
+	BSP_LCD_Init();
+	BSP_LCD_LayerRgb565Init(1, (uint32_t)&lcd_image_fg);
+	BSP_LCD_LayerRgb565Init(0, (uint32_t)&lcd_image_bg);
+	
+	BSP_LCD_DisplayOn();
+	
+	BSP_LCD_SelectLayer(0);     //Czyszczenie tla i ustawianie koloru
+	BSP_LCD_Clear(LCD_COLOR_WHITE);
+	BSP_LCD_SelectLayer(1);
+	BSP_LCD_Clear(LCD_COLOR_WHITE);
+	
+	BSP_LCD_SetTransparency(0, 255);  //Przezroczystosc
+	BSP_LCD_SetTransparency(1, 100);
+	
+}
 
+void draw_background(){
+	BSP_LCD_SelectLayer(0);
+	BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+	BSP_LCD_FillRect(0, 136, 480, 130);
+	BSP_LCD_SelectLayer(0);
+	BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
+	BSP_LCD_FillEllipse(240, 130, 30, 30);
+}
 /**
   * @brief  The application entry point.
   *
@@ -1105,219 +1151,44 @@ static void MX_GPIO_Init(void)
 }
 
 
-void lcd_start(){
- /* LCD Initialization */ 
-  BSP_LCD_Init();
-
-  /* LCD Initialization */ 
-  /*BSP_LCD_LayerDefaultInit(0, LCD_FB_START_ADDRESS);
-  BSP_LCD_LayerDefaultInit(1, LCD_FB_START_ADDRESS+(BSP_LCD_GetXSize()*BSP_LCD_GetYSize()*4));*/
-  
-  BSP_LCD_LayerRgb565Init(0, (uint32_t) &lcd_image_bg);
-  BSP_LCD_LayerRgb565Init(1, (uint32_t) &lcd_image_fg);
-  //BSP_LCD_LayerDefaultInit(0, lcd_image_bg);a
-  //BSP_LCD_LayerDefaultInit(1, lcd_image_fg);
-  /*
-  BSP_LCD_SetLayerAddress(0, &lcd_image_bg[0][0]);
-  BSP_LCD_SetLayerAddress(1, &lcd_image_fg[0][0]);
-*/
-  /* Enable the LCD */ 
-  BSP_LCD_DisplayOn(); 
-  
-    
-  /* Select the LCD Background Layer  */
-  BSP_LCD_SelectLayer(0);
-
-  /* Clear the Background Layer */ 
-  BSP_LCD_Clear(LCD_COLOR_WHITE);  
-  
-  /* Select the LCD Foreground Layer  */
-  BSP_LCD_SelectLayer(1);
-
-  /* Clear the Foreground Layer */ 
-  BSP_LCD_Clear(LCD_COLOR_WHITE);
-  
-  /* Configure the transparency for foreground and background :
-     Increase the transparency */
-  BSP_LCD_SetTransparency(0, 255);
-  BSP_LCD_SetTransparency(1, 255);
-  
-  /*
-  for(int i= 0; i < LCD_Y_SIZE; ++i){
-   for(int j = 0; j < LCD_X_SIZE; ++j){
-	    lcd_image_bg[i][j] = 0;
-		lcd_image_fg[i][j] = 0;
-   }
-  }*/
-  /*
-  for(int i= 10; i < 100; ++i){
-   for(int j = 10; j < 100; ++j){
-    lcd_image_bg[i][j] = 200;
-	lcd_image_fg[i][j] = 255;
-	}}
-	*/
-  
-  
-}
-
-// int draw_rectangle(int x, int y, int width, int height, uint32_t color){
-// 	if(x + width >= LCD_X_SIZE  || y + height >= LCD_Y_SIZE){
-// 		return 1;
-// 	}
-	
-// 	BSP_LCD_SetTextColor(color);
-	
-// 	for(int i = 0; i < width; ++i){
-// 		for(int j  = 0; j < height; ++j){
-// 			lcd_image_fg[y + j][x + i] = 0;
-// 		}
-// 	}
-	
-// 	return 0;
-// }
-
-void initialize_touchscreen(){
-	uint8_t  status = 0;
-	status = BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
-	if (status != TS_OK)
-	{
-		BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
-		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		BSP_LCD_DisplayStringAt(0, BSP_LCD_GetYSize() - 95, (uint8_t *)"ERROR", CENTER_MODE);
-		BSP_LCD_DisplayStringAt(0, BSP_LCD_GetYSize() - 80, (uint8_t *)"Touchscreen cannot be initialized", CENTER_MODE);
-		return;
-	}
-}
-
-void draw_background() {
-//BSP_LCD_SetTextColor()
-	BSP_LCD_SetTextColor(LCD_COLOR_RED);
-
-	BSP_LCD_FillRect(150, 100, 100, 50);
-	
-	pPoint Points = calloc(4, sizeof(Point));
-	Points[0].X = 10;
-	Points[0].Y = 10;
-	Points[1].X = 10;
-	Points[1].Y = 50;
-	Points[2].X = 120;
-	Points[2].Y = 50;
-	Points[3].X = 100;
-	Points[3].Y = 10;
-	BSP_LCD_FillPolygon(Points, 4);
-}
-
-// const int KEYBOARD_X = 10;
-const int KEYBOARD_Y = 20;
-// int KEYBOARD_KEY_WIDTH = 20;
-// int KEYBOARD_KEY_HEIGHT = 20;
-const int KEYBOARD_KEY_RADIUS = 20;
-
-const int WRITTEN_X = 3;
-const int WRITTEN_Y = 3;
-
-// possible invert
-const MAX_Y = 480;
-const MAX_X = 272;
-
-// text buffer
-char written[1024] = {0};
-int cursor = 0;
-
-char keys[2][11] = {
-  "qwertyuiop",
-  "asdfghjkl",
-  "zxcvbnm"
-};
-
-int row_margin(int row) {
-  const int width = strlen(keys[row]) * KEYBOARD_KEY_RADIUS;
-  return (MAX_X - width) * 2;
-}
-
-void draw_keyboard(void) {
-  // TODO: align center
-
-  int y = KEYBOARD_Y;
-  for(int row = 0; row < 3; ++row){
-    const int margin = row_margin(row);
-    int x = margin;
-
-    for(int col = 0; col < row_size(row); ++col) {
-      // draw key
-      BSP_LCD_FillEllipse(x + KEYBOARD_KEY_RADIUS, y + KEYBOARD_KEY_RADIUS / 2,
-        KEYBOARD_KEY_RADIUS, KEYBOARD_KEY_RADIUS);
-      BSP_LCD_DisplayChar(x + (KEYBOARD_KEY_RADIUS / 2), y, keys[row][col]);
-      x += KEYBOARD_KEY_RADIUS;
-    }
-    y += KEYBOARD_KEY_RADIUS;
-  }
-}
-
-char pos_to_key(int x, int y) {
-  int row = (y - KEYBOARD_Y) / KEYBOARD_KEY_RADIUS;
-  int col = (x - row_margin(row)) / KEYBOARD_KEY_RADIUS;
-
-  // TODO handle outside of keyboard
-
-  return keys[row][col];
-}
-
-void write_char(char c){
-  written[cursor] = c;
-  ++cursor;
-
-  // rewrite all?
-
-  // TODO linebreaking
-  BSP_LCD_DisplayStringAt(WRITTEN_X, WRITTEN_Y, written, LEFT_MODE);
-}
-
 void mainTask(void* p)
 {
+
 	lcd_start();
+	
+	//draw_background();
+	initialize_touchscreen();
 	
 	/* init code for FATFS */
 	MX_FATFS_Init();
 
 	/* init code for USB_HOST */
 	MX_USB_HOST_Init();
-	
 
-	xprintf("LCD resolution X: %d, Y: %d\n",(int)LCD_X_SIZE,(int)LCD_Y_SIZE);\
-	
-	draw_background();
+	xprintf("LCD resolution X: %d, Y: %d\n",(int)LCD_X_SIZE,(int)LCD_Y_SIZE);
 	
 	xprintf("entering mainTask loop...\n");
 	
 	/* Infinite loop */
 	while(1)
 	{
-		// vTaskDelay(500);
-
 		BSP_TS_GetState(&TS_State);
 		if(TS_State.touchDetected){
-      int x, y;
-      x = TS_State.touchX;
-      y = TS_State.touchY;
-      char letter = pos_to_key(x, y);
-      write_char(letter);
-
-
 			BSP_LCD_SelectLayer(0);
 			BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
-			BSP_LCD_FillEllipse(x, y, 40, 40);
+			BSP_LCD_FillEllipse(10, 10, 30, 30);
 		}
 		else{
-			// BSP_LCD_SelectLayer(0);     //Czyszczenie tla i ustawianie koloru
-			// BSP_LCD_Clear(LCD_COLOR_WHITE);
-			// BSP_LCD_SelectLayer(1);
-			// BSP_LCD_Clear(LCD_COLOR_WHITE);
+			BSP_LCD_SelectLayer(0);     //Czyszczenie tla i ustawianie koloru
+			BSP_LCD_Clear(LCD_COLOR_WHITE);
+			BSP_LCD_SelectLayer(1);
+			BSP_LCD_Clear(LCD_COLOR_WHITE);
 		}
 		
 		vTaskDelay(500);
 	}
 }
+
 
 /**
   * @brief  Period elapsed callback in non blocking mode

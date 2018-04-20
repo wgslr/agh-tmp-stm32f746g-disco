@@ -1,0 +1,92 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "/usr/include",
+                "/usr/local/include",
+                "${workspaceFolder}"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "/usr/include",
+                    "/usr/local/include",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ]
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}",
+                "/usr/include/c++/7.3.1",
+                "/usr/include/c++/7.3.1/x86_64-pc-linux-gnu",
+                "/usr/include/c++/7.3.1/backward",
+                "/usr/lib/gcc/x86_64-pc-linux-gnu/7.3.1/include",
+                "/usr/local/include",
+                "/usr/lib/gcc/x86_64-pc-linux-gnu/7.3.1/include-fixed",
+                "/usr/include",
+                "${workspaceFolder}/Inc",
+                "${workspaceFolder}/Drivers/STM32F7xx_HAL_Driver/Inc",
+                "${workspaceFolder}/Drivers/BSP/STM32746G-Discovery",
+                "${workspaceFolder}/Middlewares/Third_Party/FreeRTOS/Source/include",
+                "${workspaceFolder}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1",
+                "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32F7xx/Include",
+                "${workspaceFolder}/Middlewares/Third_Party/FatFs/src",
+                "${workspaceFolder}/Middlewares/ST/STM32_USB_Host_Library/Core/Inc",
+                "${workspaceFolder}/Drivers/CMSIS/RTOS/Template",
+                "${workspaceFolder}/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${workspaceFolder}/Drivers/",
+                    "/usr/include/c++/7.3.1",
+                    "/usr/include/c++/7.3.1/x86_64-pc-linux-gnu",
+                    "/usr/include/c++/7.3.1/backward",
+                    "/usr/lib/gcc/x86_64-pc-linux-gnu/7.3.1/include",
+                    "/usr/local/include",
+                    "/usr/lib/gcc/x86_64-pc-linux-gnu/7.3.1/include-fixed",
+                    "/usr/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
+                "${workspaceFolder}"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "intelliSenseMode": "msvc-x64",
+            "browse": {
+                "path": [
+                    "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include/*",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 3
+}
