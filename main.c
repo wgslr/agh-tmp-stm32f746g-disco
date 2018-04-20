@@ -1160,21 +1160,21 @@ void lcd_start(){
   
 }
 
-int draw_rectangle(int x, int y, int width, int height, uint32_t color){
-	if(x + width >= LCD_X_SIZE  || y + height >= LCD_Y_SIZE){
-		return 1;
-	}
+// int draw_rectangle(int x, int y, int width, int height, uint32_t color){
+// 	if(x + width >= LCD_X_SIZE  || y + height >= LCD_Y_SIZE){
+// 		return 1;
+// 	}
 	
-	BSP_LCD_SetTextColor(color);
+// 	BSP_LCD_SetTextColor(color);
 	
-	for(int i = 0; i < width; ++i){
-		for(int j  = 0; j < height; ++j){
-			lcd_image_fg[y + j][x + i] = 0;
-		}
-	}
+// 	for(int i = 0; i < width; ++i){
+// 		for(int j  = 0; j < height; ++j){
+// 			lcd_image_fg[y + j][x + i] = 0;
+// 		}
+// 	}
 	
-	return 0;
-}
+// 	return 0;
+// }
 
 void initialize_touchscreen(){
 	uint8_t  status = 0;
@@ -1191,8 +1191,6 @@ void initialize_touchscreen(){
 
 void draw_background() {
 //BSP_LCD_SetTextColor()
-	//draw_rectangle(3, 5, 100, 200, LCD_COLOR_DARKYELLOW);
-	//draw_rectangle(30, 5, 100, 200, LCD_COLOR_RED);
 	BSP_LCD_SetTextColor(LCD_COLOR_RED);
 
 	BSP_LCD_FillRect(150, 100, 100, 50);
@@ -1299,19 +1297,21 @@ void mainTask(void* p)
 		BSP_TS_GetState(&TS_State);
 		if(TS_State.touchDetected){
       int x, y;
+      x = TS_State.touchX;
+      y = TS_State.touchY;
       char letter = pos_to_key(x, y);
       write_char(letter);
 
 
 			BSP_LCD_SelectLayer(0);
 			BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
-			BSP_LCD_FillEllipse(10, 10, 30, 30);
+			BSP_LCD_FillEllipse(x, y, 40, 40);
 		}
 		else{
-			BSP_LCD_SelectLayer(0);     //Czyszczenie tla i ustawianie koloru
-			BSP_LCD_Clear(LCD_COLOR_WHITE);
-			BSP_LCD_SelectLayer(1);
-			BSP_LCD_Clear(LCD_COLOR_WHITE);
+			// BSP_LCD_SelectLayer(0);     //Czyszczenie tla i ustawianie koloru
+			// BSP_LCD_Clear(LCD_COLOR_WHITE);
+			// BSP_LCD_SelectLayer(1);
+			// BSP_LCD_Clear(LCD_COLOR_WHITE);
 		}
 		
 		vTaskDelay(500);
