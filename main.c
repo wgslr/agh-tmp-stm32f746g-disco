@@ -1129,13 +1129,14 @@ void lcd_start(){
   BSP_LCD_SelectLayer(0);
 
   /* Clear the Background Layer */ 
-  BSP_LCD_Clear(LCD_COLOR_WHITE);  
+  BSP_LCD_Clear(LCD_COLOR_LIGHTMAGENTA  );  
   
   /* Select the LCD Foreground Layer  */
   BSP_LCD_SelectLayer(1);
 
   /* Clear the Foreground Layer */ 
-  BSP_LCD_Clear(LCD_COLOR_WHITE);
+  BSP_LCD_Clear(LCD_COLOR_DARKGRAY  );
+  //BSP_LCD_Clear(LCD_COLOR_TRANSPARENT);
   
   /* Configure the transparency for foreground and background :
      Increase the transparency */
@@ -1189,93 +1190,143 @@ void initialize_touchscreen(){
 	}
 }
 
-void draw_background() {
-//BSP_LCD_SetTextColor()
-	BSP_LCD_SetTextColor(LCD_COLOR_RED);
-
-	BSP_LCD_FillRect(150, 100, 100, 50);
-	
-	pPoint Points = calloc(4, sizeof(Point));
-	Points[0].X = 10;
-	Points[0].Y = 10;
-	Points[1].X = 10;
-	Points[1].Y = 50;
-	Points[2].X = 120;
-	Points[2].Y = 50;
-	Points[3].X = 100;
-	Points[3].Y = 10;
-	BSP_LCD_FillPolygon(Points, 4);
-}
 
 // const int KEYBOARD_X = 10;
-const int KEYBOARD_Y = 20;
+const int KEYBOARD_Y = 120;
 // int KEYBOARD_KEY_WIDTH = 20;
 // int KEYBOARD_KEY_HEIGHT = 20;
 const int KEYBOARD_KEY_RADIUS = 20;
 
-const int WRITTEN_X = 3;
-const int WRITTEN_Y = 3;
 
-// possible invert
-const MAX_Y = 480;
-const MAX_X = 272;
+const uint32_t WRITTEN_Y = 3;
+const uint32_t TEXT_MARGIN_X = 10;
+const uint32_t TEXT_HEIGHT = 100;
+const uint32_t TEXT_BACKGROUND = LCD_COLOR_LIGHTGRAY;
+//const int WRITTEN_X = 3;
+
+const int MAX_Y = 272;
+const int MAX_X = 480;
+
+const int ROW_CHARS = 27;
+
+const char BACKSPACE = '<';
+const char CLEAR = '%';
 
 // text buffer
-char written[1024] = {0};
+char written[1024] = "";
 int cursor = 0;
 
-char keys[2][11] = {
+char keys[4][11] = {
   "qwertyuiop",
-  "asdfghjkl",
-  "zxcvbnm"
+  "asdfghjkl%",
+  "zxcvbnm!?<",
+  "    "
 };
 
 int row_margin(int row) {
-  const int width = strlen(keys[row]) * KEYBOARD_KEY_RADIUS;
-  return (MAX_X - width) * 2;
+  const int width = strlen(keys[row]) * KEYBOARD_KEY_RADIUS * 2;
+  return (MAX_X - width) / 2;
+}
+
+void draw_background() {
+
+	BSP_LCD_SetTextColor(TEXT_BACKGROUND);
+	BSP_LCD_SetBackColor(TEXT_BACKGROUND);
+
+	int x1 = TEXT_MARGIN_X;
+	BSP_LCD_SelectLayer(1);
+	BSP_LCD_FillRect(x1, WRITTEN_Y, MAX_X - TEXT_MARGIN_X * 2, TEXT_HEIGHT);
+	
 }
 
 void draw_keyboard(void) {
-  // TODO: align center
-
   int y = KEYBOARD_Y;
-  for(int row = 0; row < 3; ++row){
+  for(int row = 0; row < 4; ++row){
     const int margin = row_margin(row);
     int x = margin;
 
-    for(int col = 0; col < row_size(row); ++col) {
+    for(int col = 0; col < strlen(keys[row]); ++col) {
       // draw key
-      BSP_LCD_FillEllipse(x + KEYBOARD_KEY_RADIUS, y + KEYBOARD_KEY_RADIUS / 2,
+	  
+		BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+	  
+	  	BSP_LCD_SetBackColor(LCD_COLOR_BLUE);
+		BSP_LCD_FillEllipse(x + KEYBOARD_KEY_RADIUS, y + KEYBOARD_KEY_RADIUS / 2,
         KEYBOARD_KEY_RADIUS, KEYBOARD_KEY_RADIUS);
-      BSP_LCD_DisplayChar(x + (KEYBOARD_KEY_RADIUS / 2), y, keys[row][col]);
-      x += KEYBOARD_KEY_RADIUS;
+		
+		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+        BSP_LCD_DisplayChar(x + (KEYBOARD_KEY_RADIUS / 2), y - 3, keys[row][col]);
+      x += KEYBOARD_KEY_RADIUS * 2;
     }
-    y += KEYBOARD_KEY_RADIUS;
+    y += KEYBOARD_KEY_RADIUS * 2;
   }
 }
 
 char pos_to_key(int x, int y) {
-  int row = (y - KEYBOARD_Y) / KEYBOARD_KEY_RADIUS;
-  int col = (x - row_margin(row)) / KEYBOARD_KEY_RADIUS;
+  int row = (y - KEYBOARD_Y) / (KEYBOARD_KEY_RADIUS * 2);
+  int col = (x - row_margin(row)) / (KEYBOARD_KEY_RADIUS * 2);
 
   // TODO handle outside of keyboard
 
   return keys[row][col];
 }
 
-void write_char(char c){
-  written[cursor] = c;
-  ++cursor;
-
-  // rewrite all?
-
-  // TODO linebreaking
-  BSP_LCD_DisplayStringAt(WRITTEN_X, WRITTEN_Y, written, LEFT_MODE);
+void draw_text() {
+	draw_background();
+	BSP_LCD_SetBackColor(LCD_COLOR_LIGHTGRAY);
+	//BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
+	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+	
+	//BSP_LCD_DisplayStringAt(TEXT_MARGIN_X, WRITTEN_Y , (uint8_t*) written, LEFT_MODE);
+	int chars_left = cursor;
+	int row = 0;
+	while(chars_left > 0) {
+		char* rowchars = calloc(ROW_CHARS + 1, sizeof(char));
+		strncpy(rowchars, written + ROW_CHARS * row, ROW_CHARS);
+		
+		const int HEIGHT = 25;
+		BSP_LCD_DisplayStringAt(TEXT_MARGIN_X, WRITTEN_Y + (row * HEIGHT), (uint8_t*) rowchars, LEFT_MODE);
+		//BSP_LCD_DisplayStringAtLine(row, (uint8_t*)rowchars);
+		
+		++row;
+		chars_left -= ROW_CHARS;
+	}
 }
+void clear_text(void) {
+	for(int i = 0; i < 1024; ++i){
+		written[i] = 0;
+	}
+	cursor = 0;
+}
+
+void write_char(char c){
+	if(c == '<') {
+	 // backspace
+		written[cursor - 1] = '\0';
+		--cursor;
+	} else if (c == CLEAR) {
+		clear_text();
+	} else {
+		written[cursor] = c;
+		++cursor;
+	} 
+
+	//BSP_LCD_SetBackColor(LCD_COLOR_YELLOW);
+	//BSP_LCD_SetBackColor(LCD_COLOR_W);
+	//BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+	
+	
+	draw_text();
+	//BSP_LCD_DisplayStringAt(TEXT_MARGIN_X, WRITTEN_Y, (uint8_t*) written, LEFT_MODE);
+  //BSP_LCD_DisplayStringAt(MAX_X/2, WRITTEN_Y, (uint8_t*) written, CENTER_MODE);
+}
+
 
 void mainTask(void* p)
 {
 	lcd_start();
+	
+	initialize_touchscreen();
 	
 	/* init code for FATFS */
 	MX_FATFS_Init();
@@ -1287,6 +1338,8 @@ void mainTask(void* p)
 	xprintf("LCD resolution X: %d, Y: %d\n",(int)LCD_X_SIZE,(int)LCD_Y_SIZE);\
 	
 	draw_background();
+	draw_keyboard();
+	//BSP_LCD_DisplayStringAt(WRITTEN_X, WRITTEN_Y, (uint8_t*) written, LEFT_MODE);
 	
 	xprintf("entering mainTask loop...\n");
 	
@@ -1294,25 +1347,25 @@ void mainTask(void* p)
 	while(1)
 	{
 		// vTaskDelay(500);
-
 		BSP_TS_GetState(&TS_State);
 		if(TS_State.touchDetected){
-      int x, y;
-      x = TS_State.touchX;
-      y = TS_State.touchY;
-      char letter = pos_to_key(x, y);
-      write_char(letter);
+		  int x, y;
+		  x = TS_State.touchX[0];
+		  y = TS_State.touchY[0];
+		  
+		  char letter = pos_to_key(x, y);
+		  write_char(letter);
 
 
-			BSP_LCD_SelectLayer(0);
+			/*BSP_LCD_SelectLayer(1);
 			BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
-			BSP_LCD_FillEllipse(x, y, 40, 40);
+			BSP_LCD_FillEllipse(x, y, 5, 5);*/
 		}
 		else{
-			// BSP_LCD_SelectLayer(0);     //Czyszczenie tla i ustawianie koloru
-			// BSP_LCD_Clear(LCD_COLOR_WHITE);
-			// BSP_LCD_SelectLayer(1);
-			// BSP_LCD_Clear(LCD_COLOR_WHITE);
+			//BSP_LCD_SelectLayer(0);     //Czyszczenie tla i ustawianie koloru
+			//BSP_LCD_Clear(LCD_COLOR_WHITE);
+			//BSP_LCD_SelectLayer(1);
+			//BSP_LCD_Clear(LCD_COLOR_WHITE);
 		}
 		
 		vTaskDelay(500);

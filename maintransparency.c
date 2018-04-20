@@ -192,7 +192,6 @@ void lcd_start(){
   
   BSP_LCD_LayerRgb565Init(0, (uint32_t) &lcd_image_bg);
   BSP_LCD_LayerRgb565Init(1, (uint32_t) &lcd_image_fg);
-
   /* Enable the LCD */ 
   BSP_LCD_DisplayOn(); 
   
